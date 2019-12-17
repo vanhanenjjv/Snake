@@ -5,5 +5,9 @@
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true
+    },
+    "[cpp]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
     }
 }
