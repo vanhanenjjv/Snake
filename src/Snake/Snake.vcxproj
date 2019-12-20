@@ -18,5 +18,32 @@
   <ItemGroup>
     <ClCompile Include="main.cc" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="console.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="random.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="point.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="character_batch.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="game_object.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="food.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="snake_body_part.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="snake.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="snake_game.cc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Targets" />
 </Project>
