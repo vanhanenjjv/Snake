@@ -1,5 +1,6 @@
 #include "snake_game.h"
 
+#include <iostream>
 #include <thread>
 
 #include "snake.h"
@@ -48,7 +49,7 @@ void SnakeGame::UpdateGame() {
 }
 
 void SnakeGame::HandleInput() {
-  while (true) {
+  while (this->snake->alive) {
     if (console::IsKeyDown('W'))
       this->snake->Turn(UP);
     if (console::IsKeyDown('A'))
@@ -81,16 +82,9 @@ void SnakeGame::CreateFood() {
 }
 
 void SnakeGame::HandleCollision() {
-  // Handle the collision with food
-  if (this->snake->position.x == this->food->position.x &&
-    this->snake->position.y == this->food->position.y) {
-    this->snake->Grow();
-    this->CreateFood();
-  }
-
-  // Handle the collision with world border
   auto &head = this->snake->body[0];
 
+  // Handle the collision with world border
   if (head.position.x < 0)
     head.position.x = this->width - 1;
   else if (head.position.x > this->width - 1)
@@ -99,6 +93,20 @@ void SnakeGame::HandleCollision() {
     head.position.y = this->height - 1;
   else if (head.position.y > this->height - 1)
     head.position.y = 0;
+
+  // Handle the collision with the snake itself
+  for (int i = 1; i < this->snake->length; ++i) {
+    if (head.position.x == this->snake->body[i].position.x &&
+      head.position.y == this->snake->body[i].position.y)
+      this->snake->alive = false;
+  }
+
+  // Handle the collision with food
+  if (this->snake->position.x == this->food->position.x &&
+    this->snake->position.y == this->food->position.y) {
+    this->snake->Grow();
+    this->CreateFood();
+  }
 }
 
 void SnakeGame::Start() {
@@ -107,11 +115,15 @@ void SnakeGame::Start() {
   // Start thread for handling inputs
   std::thread input(&SnakeGame::HandleInput, this);
 
-  while (true) {
+  while (this->snake->alive) {
     this->DrawGame();
     this->UpdateGame();
 
     // Wait for 0.3 seconds for the next update
     _sleep(300);
   }
+
+  // Quick implementation of the score view
+  console::Clear();
+  std::cout << "Your score: " << this->snake->length << "\n\n";
 }

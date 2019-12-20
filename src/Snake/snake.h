@@ -23,6 +23,7 @@ class Snake : public GameObject {
       this->body.push_back(head);
     }
     std::vector<SnakeBodyPart> body = std::vector<SnakeBodyPart>();
+    bool alive = true;
     int length = 1;
     Direction direction = NONE;
     void Draw(CharacterBatch &character_batch);
