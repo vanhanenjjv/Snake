@@ -17,7 +17,7 @@ enum Direction {
 class Snake : public GameObject {
   public:
     Snake(int x, int y) : GameObject(Point { x, y }) {
-      auto &head = SnakeBodyPart(x, y);
+      auto head = SnakeBodyPart(x, y);
 
       this->position = head.position;
       this->body.push_back(head);

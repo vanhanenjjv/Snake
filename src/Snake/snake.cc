@@ -1,33 +1,37 @@
 #include "snake.h"
 
+#include <iostream>
+
+
 void Snake::Update() {
   for (int i = this->body.size() - 1; i > 0; --i) {
     this->body[i].position = this->body[i - 1].position;
   }
 
-  auto &head = this->body[0];
+  auto head = &this->body[0];
 
   switch (this->direction) {
     case NONE: break;
     case UP: {
-      head.position.y -= 1;
+      head->position.y -= size.y;
       break;
     };
     case RIGHT: {
-      head.position.x += 1;
+      // std::cout << "oooo\n";
+      head->position.x += size.x;
       break;
     };
     case DOWN: {
-      head.position.y += 1;
+      head->position.y += size.y;
       break;
     };
     case LEFT: {
-      head.position.x -= 1;
+      head->position.x -= size.x;
       break;
     };
   }
 
-  this->position = head.position;
+  this->position = head->position;
 }
 
 void Snake::Draw(CharacterBatch &character_batch) {

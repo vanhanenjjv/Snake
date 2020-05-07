@@ -2,18 +2,22 @@
 
 #include <iostream>
 #include <thread>
+#include <math.h>
 
 #include "snake.h"
 #include "food.h"
 
-SnakeGame::SnakeGame(int width, int height) {
-  this->width = width;
-  this->height = height;
+using emscripten::val;
 
-  this->character_batch = new CharacterBatch(width, height);
 
-  // Start the game from the center
-  this->snake = new Snake(width / 2, height / 2);
+SnakeGame::SnakeGame(val canvas) {
+  this->width = canvas["width"].as<int>();
+  this->height = canvas["height"].as<int>();
+
+  this->character_batch = new CharacterBatch(canvas);
+
+  std::cout << "width: " << this->width << "\n";
+  std::cout << "height: " << this->height << "\n";
 }
 
 void SnakeGame::DrawBorders() {
@@ -24,7 +28,7 @@ void SnakeGame::DrawBorders() {
   }
 
   // Draw top and bottom border
-  for (int x = 0; x < this->width; ++x) {
+  for (int x = 1; x < this->width; ++x) {
     this->character_batch->Write(x, 0, '-');
     this->character_batch->Write(x, this->height - 1, '-');
   }
@@ -35,7 +39,6 @@ void SnakeGame::DrawGame() {
   this->character_batch->Begin();
 
   // Writes data to buffer
-  this->DrawBorders();
   this->food->Draw(*this->character_batch);
   this->snake->Draw(*this->character_batch);
 
@@ -48,16 +51,17 @@ void SnakeGame::UpdateGame() {
   this->HandleCollision();
 }
 
+// obsoleted
 void SnakeGame::HandleInput() {
   while (this->snake->alive) {
-    if (console::IsKeyDown('W'))
-      this->snake->Turn(UP);
-    if (console::IsKeyDown('A'))
-      this->snake->Turn(LEFT);
-    if (console::IsKeyDown('D'))
-      this->snake->Turn(RIGHT);
-    if (console::IsKeyDown('S'))
-      this->snake->Turn(DOWN);
+    // if (console::IsKeyDown('W'))
+    //   this->snake->Turn(UP);
+    // if (console::IsKeyDown('A'))
+    //   this->snake->Turn(LEFT);
+    // if (console::IsKeyDown('D'))
+    //   this->snake->Turn(RIGHT);
+    // if (console::IsKeyDown('S'))
+    //   this->snake->Turn(DOWN);
   }
 }
 
@@ -68,8 +72,8 @@ void SnakeGame::CreateFood() {
   do {
     colliding = false;
 
-    x = this->random.Next(1, this->width - 1);
-    y = this->random.Next(1, this->height - 1);
+    x = this->random.Next(0, 21) * 40;
+    y = this->random.Next(0, 21) * 40;
 
     for (auto body_part : this->snake->body) {
       if (body_part.position.x == x &&
@@ -82,48 +86,53 @@ void SnakeGame::CreateFood() {
 }
 
 void SnakeGame::HandleCollision() {
-  auto &head = this->snake->body[0];
+  auto head = &this->snake->body[0];
 
   // Handle the collision with world border
-  if (head.position.x < 0)
-    head.position.x = this->width - 1;
-  else if (head.position.x > this->width - 1)
-    head.position.x = 0;
-  else if (head.position.y < 0)
-    head.position.y = this->height - 1;
-  else if (head.position.y > this->height - 1)
-    head.position.y = 0;
+  if (head->position.x < 0)
+    head->position.x = this->width - 40;
+  else if (head->position.x > this->width - 1)
+    head->position.x = 0;
+  else if (head->position.y < 0)
+    head->position.y = this->height - 40;
+  else if (head->position.y > this->height - 1)
+    head->position.y = 0;
 
   // Handle the collision with the snake itself
   for (int i = 1; i < this->snake->length; ++i) {
-    if (head.position.x == this->snake->body[i].position.x &&
-      head.position.y == this->snake->body[i].position.y)
+    if (head->position.x == this->snake->body[i].position.x &&
+      head->position.y == this->snake->body[i].position.y)
       this->snake->alive = false;
   }
 
   // Handle the collision with food
-  if (this->snake->position.x == this->food->position.x &&
-    this->snake->position.y == this->food->position.y) {
+  if (head->position.x == this->food->position.x &&
+    head->position.y == this->food->position.y) {
     this->snake->Grow();
     this->CreateFood();
   }
 }
 
 void SnakeGame::Start() {
-  this->CreateFood();
+  // Start the game from the center
+  this->snake = new Snake((this->width / 2) - GameObject::size.x / 2, this->height / 2 - GameObject::size.y / 2);
 
-  // Start thread for handling inputs
-  std::thread input(&SnakeGame::HandleInput, this);
+  this->CreateFood();
 
   while (this->snake->alive) {
     this->DrawGame();
     this->UpdateGame();
-
-    // Wait for 0.3 seconds for the next update
-    _sleep(300);
+    
+    emscripten_sleep(
+      // just a quick meme to make the game more interesting to play
+      std::max(
+        200 - this->snake->length * 10,
+        50));
   }
 
-  // Quick implementation of the score view
-  console::Clear();
-  std::cout << "Your score: " << this->snake->length << "\n\n";
+  EM_ASM({
+    // some good old fashioned calls to consumer from library
+    window.game.Start();
+    alert('Your score: ' + $0);
+  }, this->snake->length);
 }

@@ -6,6 +6,7 @@
 
 class GameObject {
   public:
+    static constexpr Point size { 40, 40 };
     Point position;
     GameObject(Point position) {
       this->position = position;
