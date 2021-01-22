@@ -1,0 +1,20 @@
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+#canvas {
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 840px;
+    height: 840px;
+    background: black;
+}
+
+#canvas:focus {
+    outline: none;
+}
